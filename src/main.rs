@@ -15,12 +15,10 @@ fn main() -> io::Result<()> {
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny).unwrap();
     for j in 0..(ny -1) {
         for i in 0..nx {
-            let r = i as f32 / nx as f32;
-            let g = (ny - j) as f32 / ny as f32;
-            let b = 0.2;
-            let ir = (255.99 * r) as u32;
-            let ig = (255.99 * g) as u32;
-            let ib = (255.99 * b) as u32;
+            let col = math::vec3((i as f32 / nx as f32, (ny - j) as f32 / ny as f32, 0.2));
+            let ir = (255.99 * col[0]) as u32;
+            let ig = (255.99 * col[1]) as u32;
+            let ib = (255.99 * col[2]) as u32;
             write!(&mut file, "{} {} {}\n", ir, ig, ib).unwrap();
         }
     }
