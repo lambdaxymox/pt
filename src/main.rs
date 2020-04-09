@@ -3,6 +3,7 @@ extern crate cgmath;
 mod ray;
 mod hitable;
 mod hitable_list;
+mod sphere;
 
 use std::fs::File;
 use std::io;
@@ -10,21 +11,8 @@ use std::io::Write;
 
 use cgmath::{Vector3, Magnitude};
 use ray::Ray;
+use sphere::Sphere;
 
-
-
-fn hit_sphere(center: Vector3, radius: f32, ray: Ray) -> f32 {
-    let oc = ray.origin - center;
-    let a = cgmath::dot(ray.direction, ray.direction);
-    let b = 2_f32 * cgmath::dot(oc, ray.direction);
-    let c = cgmath::dot(oc, oc) - radius * radius;
-    let discriminant = b * b - 4_f32 * a * c;
-    if discriminant < 0_f32 {
-        return -1_f32;
-    } else {
-        return (-b - f32::sqrt(discriminant)) / (2_f32 * a);
-    }
-}
 
 fn color(ray: Ray) -> Vector3 {
     let sphere_center = cgmath::vec3((0.0, 0.0, -1.0));

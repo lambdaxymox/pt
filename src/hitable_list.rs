@@ -1,6 +1,5 @@
 use crate::ray::Ray;
 use crate::hitable::{HitRecord, Hitable};
-use cgmath::Vector3;
 
 
 struct HitableList {
