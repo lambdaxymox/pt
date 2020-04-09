@@ -2,6 +2,7 @@ extern crate cgmath;
 
 mod ray;
 mod hitable;
+mod hitable_list;
 
 use std::fs::File;
 use std::io;
