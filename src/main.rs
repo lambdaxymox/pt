@@ -1,3 +1,7 @@
+extern crate cgmath;
+
+use cgmath as math;
+
 use std::fs::File;
 use std::io;
 use std::io::Write;
