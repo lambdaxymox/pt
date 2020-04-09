@@ -9,7 +9,28 @@ use std::io::Write;
 use cgmath::{Vector3, Magnitude};
 use ray::Ray;
 
+
+fn hit_sphere(center: Vector3, radius: f32, ray: Ray) -> f32 {
+    let oc = ray.origin - center;
+    let a = cgmath::dot(ray.direction, ray.direction);
+    let b = 2_f32 * cgmath::dot(oc, ray.direction);
+    let c = cgmath::dot(oc, oc) - radius * radius;
+    let discriminant = b * b - 4_f32 * a * c;
+    if discriminant < 0_f32 {
+        return -1_f32;
+    } else {
+        return (-b - f32::sqrt(discriminant)) / (2_f32 * a);
+    }
+}
+
 fn color(ray: Ray) -> Vector3 {
+    let sphere_center = cgmath::vec3((0.0, 0.0, -1.0));
+    let sphere_radius = 0.5;
+    let t = hit_sphere(sphere_center, sphere_radius, ray);
+    if t > 0_f32 {
+        let N = (ray.point_at_parameter(t) - sphere_center).normalize();
+        return cgmath::vec3((N.x + 1_f32, N.y + 1_f32, N.z + 1_f32)) * 0.5;
+    }
     let unit_direction = ray.direction.normalize();
     let t = 0.5 * (unit_direction.y + 1.0);
     
