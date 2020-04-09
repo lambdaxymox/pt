@@ -1,6 +1,7 @@
 extern crate cgmath;
 
 mod ray;
+mod hitable;
 
 use std::fs::File;
 use std::io;
@@ -8,6 +9,7 @@ use std::io::Write;
 
 use cgmath::{Vector3, Magnitude};
 use ray::Ray;
+
 
 
 fn hit_sphere(center: Vector3, radius: f32, ray: Ray) -> f32 {
