@@ -2,7 +2,7 @@ use crate::ray::Ray;
 use crate::hitable::{HitRecord, Hitable};
 
 
-struct HitableList {
+pub struct HitableList {
     items: Vec<Box<dyn Hitable>>,
 }
 
@@ -13,8 +13,12 @@ impl HitableList {
         }
     }
 
-    fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.items.len()
+    }
+
+    pub fn push(&mut self, item: Box<dyn Hitable>) {
+        self.items.push(item);
     }
 }
 
