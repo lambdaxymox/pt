@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 lean_cgmath = { git = "https://github.com/lambdaxymox/lean-cgmath" }
+rand = "0.7.3"
