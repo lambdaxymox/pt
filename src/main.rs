@@ -78,6 +78,7 @@ fn main() -> io::Result<()> {
                 col += color(ray, &world);
             }
             col /= ns as f32;
+            col = cgmath::vec3((f32::sqrt(col[0]), f32::sqrt(col[1]), f32::sqrt(col[2])));
             let ir = (255.99 * col[0]) as u32;
             let ig = (255.99 * col[1]) as u32;
             let ib = (255.99 * col[2]) as u32;
