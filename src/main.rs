@@ -22,6 +22,20 @@ use hitable::{Hitable, HitRecord};
 use hitable_list::HitableList;
 
 
+fn random_in_unit_sphere() -> Vector3 {
+    let mut rng = thread_rng();
+    loop {
+        let a: f32 = rng.gen();
+        let b: f32 = rng.gen();
+        let c: f32 = rng.gen();
+        let p = cgmath::vec3((a, b, c)) * 2_f32;
+
+        // If the sample falls inside the unit sphere, we can exit.
+        if cgmath::dot(p, p) < 1.0 {
+            return p;
+        }
+    }
+}
 
 fn color<H: Hitable>(ray: Ray, world: &H) -> Vector3 {
     let mut rec = HitRecord::new(
@@ -30,7 +44,8 @@ fn color<H: Hitable>(ray: Ray, world: &H) -> Vector3 {
         cgmath::vec3((0_f32, 0_f32, 0_f32)),
     );
     if world.hit(ray, 0_f32, f32::MAX, &mut rec) {
-        return cgmath::vec3((rec.normal.x + 1_f32, rec.normal.y + 1_f32, rec.normal.z + 1_f32)) * 0.5;
+        let target = rec.p + rec.normal + random_in_unit_sphere();
+        return color(Ray::new(rec.p, target - rec.p), world) * 0.5;
     } else {
         let unit_direction = ray.direction.normalize();
         let t = (unit_direction.y + 1_f32) * 0.5;
