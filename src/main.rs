@@ -191,11 +191,16 @@ fn main() -> io::Result<()> {
     let width = 320;
     let height = 240;
     let samples_per_pixel = SAMPLES_PER_PIXEL;
-    let mut rng = rand::prelude::thread_rng();
-    let world = generate_scene(&mut rng);
     let camera = camera(width, height);
+    let mut rng = rand::prelude::thread_rng();
 
+    println!("Generating scene.");
+    let world = generate_scene(&mut rng);
+
+    println!("Generating image.");
     let image = render(width, height, samples_per_pixel, camera, world);
+    
+    println!("Writing image to file.");
     let mut file = File::create("output.ppm").unwrap();
     write_image_to_file(&image, &mut file)
 }
