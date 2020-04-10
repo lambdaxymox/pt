@@ -1,6 +1,7 @@
 use crate::ray::Ray;
 use crate::sample;
 use cgmath::{Magnitude, Vector3};
+use rand::prelude::*;
 
 
 #[inline]
@@ -39,7 +40,7 @@ impl NullMaterial {
         NullMaterial {}
     }
 
-    pub fn scatter(&self, ray_in: Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray) -> bool {
+    pub fn scatter(&self, ray_in: Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray, rng: &mut ThreadRng) -> bool {
         false
     }
 }
@@ -56,8 +57,8 @@ impl Lambertian {
         }
     }
 
-    pub fn scatter(&self, ray_in: Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray) -> bool {
-        let target = rec.p + rec.normal + sample::random_in_unit_sphere();
+    pub fn scatter(&self, ray_in: Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray, rng: &mut ThreadRng) -> bool {
+        let target = rec.p + rec.normal + sample::random_in_unit_sphere(rng);
         *scattered = Ray::new(rec.p, target - rec.p);
         *attenuation = self.albedo;
 
@@ -79,9 +80,9 @@ impl Metal {
         }
     }
 
-    pub fn scatter(&self, ray_in: Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray) -> bool {
+    pub fn scatter(&self, ray_in: Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray, rng: &mut ThreadRng) -> bool {
         let reflected = reflect(ray_in.direction.normalize(), rec.normal);
-        *scattered = Ray::new(rec.p, reflected + sample::random_in_unit_sphere() * self.fuzz);
+        *scattered = Ray::new(rec.p, reflected + sample::random_in_unit_sphere(rng) * self.fuzz);
         *attenuation = self.albedo;
 
         cgmath::dot(scattered.direction, rec.normal) > 0_f32
@@ -97,11 +98,11 @@ pub enum Material {
 }
 
 impl Material {
-    pub fn scatter(&self, ray_in: Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray) -> bool {
+    pub fn scatter(&self, ray_in: Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray, rng: &mut ThreadRng) -> bool {
         match *self {
-            Material::NullMaterial(null) => null.scatter(ray_in, rec, attenuation, scattered),
-            Material::Metal(metal) => metal.scatter(ray_in, rec, attenuation, scattered),
-            Material::Lambertian(lambertian) => lambertian.scatter(ray_in, rec, attenuation, scattered),
+            Material::NullMaterial(null) => null.scatter(ray_in, rec, attenuation, scattered, rng),
+            Material::Metal(metal) => metal.scatter(ray_in, rec, attenuation, scattered, rng),
+            Material::Lambertian(lambertian) => lambertian.scatter(ray_in, rec, attenuation, scattered, rng),
         }
     }
 

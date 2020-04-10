@@ -31,13 +31,13 @@ fn component_multiply(v1: Vector3, v2: Vector3) -> Vector3 {
     cgmath::vec3((v1.x * v2.x, v1.y * v2.y, v1.z * v2.z))
 }
 
-fn color<H: Hitable>(ray: Ray, world: &H, depth: u32) -> Vector3 {
+fn color<H: Hitable>(ray: Ray, world: &H, rng: &mut ThreadRng, depth: u32) -> Vector3 {
     match world.hit(&ray, 0.001, f32::MAX) {
         Some(hit_record) => {    
             let mut scattered = Ray::new(cgmath::vec3((0_f32, 0_f32, 0_f32)), cgmath::vec3((0_f32, 0_f32, 0_f32)));
             let mut attenuation = cgmath::vec3((0_f32, 0_f32, 0_f32));
-            if (depth < MAX_DEPTH) && (hit_record.material.scatter(ray, &hit_record, &mut attenuation, &mut scattered)) {
-                let col = color(scattered, world, depth + 1);
+            if (depth < MAX_DEPTH) && (hit_record.material.scatter(ray, &hit_record, &mut attenuation, &mut scattered, rng)) {
+                let col = color(scattered, world, rng, depth + 1);
                 return component_multiply(attenuation, col);
             } else {
                 return cgmath::vec3((0_f32, 0_f32, 0_f32));
@@ -82,7 +82,7 @@ fn main() -> io::Result<()> {
                 let v = (((ny - j) as f32) + dv) / (ny as f32);
                 let ray = camera.get_ray(u, v);
                 let p = ray.point_at_parameter(2_f32);
-                col += color(ray, &world, 0);
+                col += color(ray, &world, &mut rng, 0);
             }
             col /= ns as f32;
             col = cgmath::vec3((f32::sqrt(col[0]), f32::sqrt(col[1]), f32::sqrt(col[2])));
