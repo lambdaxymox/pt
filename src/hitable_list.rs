@@ -1,6 +1,5 @@
 use crate::ray::Ray;
-use crate::hitable::{HitRecord, Hitable};
-use crate::material::Material;
+use crate::material::{Hitable, HitRecord};
 
 
 pub struct HitableList {

@@ -2,7 +2,6 @@ extern crate cgmath;
 extern crate rand;
 
 mod ray;
-mod hitable;
 mod hitable_list;
 mod sphere;
 mod camera;
@@ -20,7 +19,11 @@ use cgmath::{Vector3, Magnitude};
 use camera::Camera;
 use ray::Ray;
 use sphere::Sphere;
+use hitable_list::HitableList;
 use material::*;
+
+
+const MAX_DEPTH: u32 = 50;
 
 
 #[inline]
@@ -29,25 +32,22 @@ fn component_multiply(v1: Vector3, v2: Vector3) -> Vector3 {
 }
 
 fn color<H: Hitable>(ray: Ray, world: &H, depth: u32) -> Vector3 {
-    let mut rec = HitRecord::new(
-        0_f32,
-        cgmath::vec3((0_f32, 0_f32, 0_f32)), 
-        cgmath::vec3((0_f32, 0_f32, 0_f32)),
-        Material::NullMaterial(NullMaterial::new())
-    );
-    if world.hit(ray, 0.001, f32::MAX, &mut rec) {
-        let mut scattered = Ray::new(cgmath::vec3((0_f32, 0_f32, 0_f32)), cgmath::vec3((0_f32, 0_f32, 0_f32)));
-        let mut attenuation = cgmath::vec3((0_f32, 0_f32, 0_f32));
-        if depth < 50 && rec.material.scatter(ray, &rec, &mut attenuation, &mut scattered) {
-            let col = color(scattered, world, depth + 1);
-            return component_multiply(attenuation, col);
-        } else {
-            return cgmath::vec3((0_f32, 0_f32, 0_f32));
+    match world.hit(&ray, 0.001, f32::MAX) {
+        Some(hit_record) => {    
+            let mut scattered = Ray::new(cgmath::vec3((0_f32, 0_f32, 0_f32)), cgmath::vec3((0_f32, 0_f32, 0_f32)));
+            let mut attenuation = cgmath::vec3((0_f32, 0_f32, 0_f32));
+            if (depth < MAX_DEPTH) && (hit_record.material.scatter(ray, &hit_record, &mut attenuation, &mut scattered)) {
+                let col = color(scattered, world, depth + 1);
+                return component_multiply(attenuation, col);
+            } else {
+                return cgmath::vec3((0_f32, 0_f32, 0_f32));
+            }
         }
-    } else {
-        let unit_direction = ray.direction.normalize();
-        let t = (unit_direction.y + 1_f32) * 0.5;
-        return cgmath::vec3((1_f32, 1_f32, 1_f32)) * (1_f32 - t) + cgmath::vec3((0.5, 0.7, 1.0)) * t
+        None => {
+            let unit_direction = ray.direction.normalize();
+            let t = (unit_direction.y + 1_f32) * 0.5;
+            return cgmath::vec3((1_f32, 1_f32, 1_f32)) * (1_f32 - t) + cgmath::vec3((0.5, 0.7, 1.0)) * t
+        }
     }
 }
 

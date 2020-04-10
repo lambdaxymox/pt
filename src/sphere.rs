@@ -20,31 +20,36 @@ impl Sphere {
 }
 
 impl Hitable for Sphere {
-    fn hit(&self, ray: Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let oc = ray.origin - self.center;
         let a = cgmath::dot(ray.direction, ray.direction);
         let b = cgmath::dot(oc, ray.direction);
         let c = cgmath::dot(oc, oc) - self.radius * self.radius;
         let discriminant = b * b - a * c; // 4 * a * c?
+
         if discriminant > 0_f32 {
-            let temp = (-b - f32::sqrt(b * b - a * c)) / a; // 4 * a * c?
+            let mut temp = (-b - f32::sqrt(b * b - a * c)) / a; // 4 * a * c?
             if temp < t_max && temp > t_min {
-                rec.t = temp;
-                rec.p = ray.point_at_parameter(rec.t);
-                rec.normal = (rec.p - self.center) / self.radius;
-                rec.material = self.material;
-                return true;
+                let hit_point = ray.point_at_parameter(temp);
+                return Some(HitRecord::new(
+                    temp,
+                    hit_point,
+                    (hit_point - self.center) / self.radius,
+                    self.material
+                ));
             }
-            let temp = (-b + f32::sqrt(b * b - a * c)) / a; // 4 * a * c?
+            temp = (-b + f32::sqrt(b * b - a * c)) / a; // 4 * a * c?
             if temp < t_max && temp > t_min {
-                rec.t = temp;
-                rec.p = ray.point_at_parameter(rec.t);
-                rec.normal = (rec.p - self.center) / self.radius;
-                rec.material = self.material;
-                return true;
+                let hit_point = ray.point_at_parameter(temp);
+                return Some(HitRecord::new(
+                    temp,
+                    hit_point,
+                    (hit_point - self.center) / self.radius,
+                    self.material
+                ));
             }
         }
 
-        false
+        None
     }
 }
