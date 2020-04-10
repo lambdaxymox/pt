@@ -10,6 +10,7 @@ mod sample;
 
 use rand::prelude::*;
 
+use std::error;
 use std::fs::File;
 use std::io;
 use std::io::Write;
@@ -23,32 +24,9 @@ use hitable_list::HitableList;
 use material::*;
 
 
-const MAX_DEPTH: u32 = 50;
+const MAX_DEPTH: u32 = 16;
+const SAMPLES_PER_PIXEL: u32 = 128;
 
-
-#[inline]
-fn component_multiply(v1: Vector3, v2: Vector3) -> Vector3 {
-    cgmath::vec3((v1.x * v2.x, v1.y * v2.y, v1.z * v2.z))
-}
-
-fn color<H: Hitable>(ray: Ray, world: &H, rng: &mut ThreadRng, depth: u32) -> Vector3 {
-    match world.hit(&ray, 0.001, f32::MAX) {
-        Some(hit) => {    
-            if depth < MAX_DEPTH {
-                let scatter = hit.material.scatter(ray, &hit, rng);
-                let col = color(scatter.ray, world, rng, depth + 1);
-                return component_multiply(scatter.attenuation, col);
-            } else {
-                return cgmath::vec3((0_f32, 0_f32, 0_f32));
-            }
-        }
-        None => {
-            let unit_direction = ray.direction.normalize();
-            let t = (unit_direction.y + 1_f32) * 0.5;
-            return cgmath::vec3((1_f32, 1_f32, 1_f32)) * (1_f32 - t) + cgmath::vec3((0.5, 0.7, 1.0)) * t
-        }
-    }
-}
 
 fn camera(width: u32, height: u32) -> Camera {
     let look_from = cgmath::vec3((3_f32, 3_f32, 2_f32));
@@ -83,15 +61,43 @@ fn generate_scene(rng: &mut ThreadRng) -> HitableList {
     world
 }
 
-fn main() -> io::Result<()> {
-    let mut file = File::create("output.ppm")?;
+#[inline]
+fn component_multiply(v1: Vector3, v2: Vector3) -> Vector3 {
+    cgmath::vec3((v1.x * v2.x, v1.y * v2.y, v1.z * v2.z))
+}
+
+fn color<H: Hitable>(ray: Ray, world: &H, rng: &mut ThreadRng, depth: u32) -> Vector3 {
+    match world.hit(&ray, 0.001, f32::MAX) {
+        Some(hit) => {    
+            if depth < MAX_DEPTH {
+                let scatter = hit.material.scatter(ray, &hit, rng);
+                let col = color(scatter.ray, world, rng, depth + 1);
+                return component_multiply(scatter.attenuation, col);
+            } else {
+                return cgmath::vec3((0_f32, 0_f32, 0_f32));
+            }
+        }
+        None => {
+            let unit_direction = ray.direction.normalize();
+            let t = (unit_direction.y + 1_f32) * 0.5;
+            return cgmath::vec3((1_f32, 1_f32, 1_f32)) * (1_f32 - t) + cgmath::vec3((0.5, 0.7, 1.0)) * t
+        }
+    }
+}
+
+fn to_bgra(r: u32, g: u32, b: u32) -> u32 {
+    255 << 24 | r << 16 | g << 8 | b
+}
+
+struct Image {
+    width: u32,
+    height: u32,
+    data: Vec<u32>,
+}
+
+fn render(width: u32, height: u32, samples_per_pixel: u32, camera: Camera, world: HitableList) -> Image {
     let mut rng = rand::prelude::thread_rng();
-    let width = 320;
-    let height = 240;
-    let samples_per_pixel = 32;
-    write!(&mut file, "P3\n{} {}\n255\n", width, height).unwrap();
-    let world = generate_scene(&mut rng);
-    let camera = camera(width, height);
+    let mut data = vec![];
     for j in 0..height {
         for i in 0..width {
             let mut col = cgmath::vec3((0_f32, 0_f32, 0_f32));
@@ -109,9 +115,34 @@ fn main() -> io::Result<()> {
             let ir = (255.99 * col[0]) as u32;
             let ig = (255.99 * col[1]) as u32;
             let ib = (255.99 * col[2]) as u32;
-            write!(&mut file, "{} {} {}\n", ir, ig, ib).unwrap();
+
+            data.push(to_bgra(ir, ig, ib));
         }
     }
 
+    Image {
+        width: width,
+        height: height,
+        data: data,
+    }
+}
+
+fn write_image_to_file(image: &Image, file: &mut File) -> io::Result<()> {
+    write!(file, "P3\n{} {}\n255\n", image.width, image.height).unwrap();
+
+
     Ok(())
+}
+
+fn main() -> io::Result<()> {
+    let width = 320;
+    let height = 240;
+    let samples_per_pixel = SAMPLES_PER_PIXEL;
+    let mut rng = rand::prelude::thread_rng();
+    let world = generate_scene(&mut rng);
+    let camera = camera(width, height);
+
+    let image = render(width, height, samples_per_pixel, camera, world);
+    let mut file = File::create("output.ppm").unwrap();
+    write_image_to_file(&image, &mut file)
 }
