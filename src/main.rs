@@ -41,21 +41,60 @@ fn camera(width: u32, height: u32) -> Camera {
 }
 
 fn generate_scene(rng: &mut ThreadRng) -> HitableList {
+    let n = 500;
     let mut world = HitableList::new();
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((0_f32, 0_f32, -1_f32)), 0.5, Material::lambertian(cgmath::vec3((0.1, 0.2, 0.5))))
+        Sphere::new(cgmath::vec3((0_f32, -1000_f32, 0_f32)), 1000_f32, Material::lambertian(cgmath::vec3((0.5, 0.5, 0.5))))
+    ));
+    
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = rng.gen::<f32>();
+            let center_x = a as f32 + 0.9 * rng.gen::<f32>();
+            let center_y = 0.2;
+            let center_z = b as f32 + 0.9 * rng.gen::<f32>();
+            let center = cgmath::vec3((center_x, center_y, center_z));
+            let scene_center = cgmath::vec3((4_f32, 2_f32, 0_f32));
+            if (center - scene_center).magnitude() > 0.9 {
+                if choose_mat < 0.8 {
+                    // Lambertian (diffuse).
+                    let albedo = cgmath::vec3((
+                        rng.gen::<f32>() * rng.gen::<f32>(), 
+                        rng.gen::<f32>() * rng.gen::<f32>(), 
+                        rng.gen::<f32>() * rng.gen::<f32>()
+                    ));
+                    world.push(Box::new(
+                        Sphere::new(center, 0.2, Material::lambertian(albedo))
+                    ));
+                } else if choose_mat < 0.95 {
+                    // Metal.
+                    let albedo = cgmath::vec3((
+                        0.5 * (1_f32 + rng.gen::<f32>()), 
+                        0.5 * (1_f32 + rng.gen::<f32>()), 
+                        0.5 * (1_f32 + rng.gen::<f32>())
+                    ));
+                    let fuzz = 0.5 * rng.gen::<f32>();
+                    world.push(Box::new(
+                        Sphere::new(center, 0.2, Material::metal(albedo, fuzz))
+                    ));
+                } else {
+                    // Glass.
+                    world.push(Box::new(
+                        Sphere::new(center, 0.2, Material::dielectric(1.5))
+                    ));
+                }
+            }
+        }
+    }
+
+    world.push(Box::new(
+        Sphere::new(cgmath::vec3((0_f32, 1_f32, 0_f32)), 1_f32, Material::dielectric(1.5))
     ));
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((0_f32, -100.5, -1_f32)), 100_f32, Material::lambertian(cgmath::vec3((0.8, 0.8, 0.0))))
+        Sphere::new(cgmath::vec3((-4_f32, 1_f32, 0_f32)), 1_f32, Material::lambertian(cgmath::vec3((0.4, 0.2, 0.1))))
     ));
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((1_f32, 0_f32, -1_f32)), 0.5, Material::metal(cgmath::vec3((0.8, 0.6, 0.2)), 0.3))
-    ));
-    world.push(Box::new(
-        Sphere::new(cgmath::vec3((-1_f32, 0_f32, -1_f32)), 0.5, Material::dielectric(1.5))
-    ));
-    world.push(Box::new(
-        Sphere::new(cgmath::vec3((-1_f32, 0_f32, -1_f32)), -0.45, Material::dielectric(1.5))
+        Sphere::new(cgmath::vec3((4_f32, 1_f32, 0_f32)), 1_f32, Material::metal(cgmath::vec3((0.7, 0.6, 0.5)), 0.1))
     ));
 
     world
