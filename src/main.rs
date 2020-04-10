@@ -86,9 +86,9 @@ fn generate_scene(rng: &mut ThreadRng) -> HitableList {
 fn main() -> io::Result<()> {
     let mut file = File::create("output.ppm")?;
     let mut rng = rand::prelude::thread_rng();
-    let width = 640;
-    let height = 480;
-    let samples_per_pixel = 100;
+    let width = 320;
+    let height = 240;
+    let samples_per_pixel = 32;
     write!(&mut file, "P3\n{} {}\n255\n", width, height).unwrap();
     let world = generate_scene(&mut rng);
     let camera = camera(width, height);
@@ -96,9 +96,9 @@ fn main() -> io::Result<()> {
         for i in 0..width {
             let mut col = cgmath::vec3((0_f32, 0_f32, 0_f32));
             for _ in 0..samples_per_pixel {
-                let du: f32 = rng.gen();
+                let du = rng.gen::<f32>();
                 let u = (i as f32 + du) / (width as f32);
-                let dv: f32 = rng.gen();
+                let dv = rng.gen::<f32>();
                 let v = (((height - j) as f32) + dv) / (height as f32);
                 let ray = camera.get_ray(&mut rng, u, v);
                 let p = ray.point_at_parameter(2_f32);
