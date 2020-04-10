@@ -20,8 +20,7 @@ use cgmath::{Vector3, Magnitude};
 use camera::Camera;
 use ray::Ray;
 use sphere::Sphere;
-use hitable::{NullMaterial, Lambertian, Metal, Hitable, HitRecord};
-use hitable_list::HitableList;
+use material::*;
 
 
 #[inline]
@@ -34,7 +33,7 @@ fn color<H: Hitable>(ray: Ray, world: &H, depth: u32) -> Vector3 {
         0_f32,
         cgmath::vec3((0_f32, 0_f32, 0_f32)), 
         cgmath::vec3((0_f32, 0_f32, 0_f32)),
-        Box::new(NullMaterial::new())
+        Material::NullMaterial(NullMaterial::new())
     );
     if world.hit(ray, 0.001, f32::MAX, &mut rec) {
         let mut scattered = Ray::new(cgmath::vec3((0_f32, 0_f32, 0_f32)), cgmath::vec3((0_f32, 0_f32, 0_f32)));
@@ -61,22 +60,22 @@ fn main() -> io::Result<()> {
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny).unwrap();
     let mut world = HitableList::new();
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((0_f32, 0_f32, -1_f32)), 0.5, Box::new(Lambertian::new(cgmath::vec3((0.8, 0.3, 0.3)))))
+        Sphere::new(cgmath::vec3((0_f32, 0_f32, -1_f32)), 0.5, Material::lambertian(cgmath::vec3((0.8, 0.3, 0.3))))
     ));
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((0_f32, -100.5, -1_f32)), 100_f32, Box::new(Lambertian::new(cgmath::vec3((0.8, 0.8, 0.0)))))
+        Sphere::new(cgmath::vec3((0_f32, -100.5, -1_f32)), 100_f32, Material::lambertian(cgmath::vec3((0.8, 0.8, 0.0))))
     ));
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((1_f32, 0_f32, -1_f32)), 0.5, Box::new(Metal::new(cgmath::vec3((0.8, 0.6, 0.2)))))
+        Sphere::new(cgmath::vec3((1_f32, 0_f32, -1_f32)), 0.5, Material::metal(cgmath::vec3((0.8, 0.6, 0.2))))
     ));
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((1_f32, 0_f32, -1_f32)), 0.5, Box::new(Metal::new(cgmath::vec3((0.8, 0.8, 0.8)))))
+        Sphere::new(cgmath::vec3((1_f32, 0_f32, -1_f32)), 0.5, Material::metal(cgmath::vec3((0.8, 0.8, 0.8))))
     ));
     let camera = Camera::new();
     for j in 0..(ny - 1) {
         for i in 0..nx {
             let mut col = cgmath::vec3((0_f32, 0_f32, 0_f32));
-            for s in 0..ns {
+            for _ in 0..ns {
                 let du: f32 = rng.gen();
                 let u = (i as f32 + du) / (nx as f32);
                 let dv: f32 = rng.gen();

@@ -1,5 +1,6 @@
 use crate::ray::Ray;
-use crate::hitable::{NullMaterial, HitRecord, Hitable};
+use crate::hitable::{HitRecord, Hitable};
+use crate::material::Material;
 
 
 pub struct HitableList {
@@ -31,7 +32,7 @@ impl Hitable for HitableList {
                 0_f32,
                 cgmath::vec3((0_f32, 0_f32, 0_f32)), 
                 cgmath::vec3((0_f32, 0_f32, 0_f32)),
-                Box::new(NullMaterial::new())
+                Material::null()
             );
             if item.hit(ray, t_min, closest_so_far, &mut temp_rec) {
                 hit_anything = true;

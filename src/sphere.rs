@@ -1,16 +1,16 @@
 use crate::ray::Ray;
-use crate::hitable::{Material, Hitable, HitRecord};
+use crate::material::{Material, Hitable, HitRecord};
 use cgmath::Vector3;
 
 
 pub struct Sphere {
     pub center: Vector3,
     pub radius: f32,
-    pub material: Box<dyn Material>,
+    pub material: Material,
 }
 
 impl Sphere {
-    pub fn new(center: Vector3, radius: f32, material: Box<dyn Material>) -> Sphere {
+    pub fn new(center: Vector3, radius: f32, material: Material) -> Sphere {
         Sphere {
             center: center,
             radius: radius,
@@ -32,6 +32,7 @@ impl Hitable for Sphere {
                 rec.t = temp;
                 rec.p = ray.point_at_parameter(rec.t);
                 rec.normal = (rec.p - self.center) / self.radius;
+                rec.material = self.material;
                 return true;
             }
             let temp = (-b + f32::sqrt(b * b - a * c)) / a; // 4 * a * c?
@@ -39,6 +40,7 @@ impl Hitable for Sphere {
                 rec.t = temp;
                 rec.p = ray.point_at_parameter(rec.t);
                 rec.normal = (rec.p - self.center) / self.radius;
+                rec.material = self.material;
                 return true;
             }
         }
