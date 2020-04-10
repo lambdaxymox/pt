@@ -53,8 +53,8 @@ fn color<H: Hitable>(ray: Ray, world: &H, rng: &mut ThreadRng, depth: u32) -> Ve
 fn main() -> io::Result<()> {
     let mut file = File::create("output.ppm")?;
     let mut rng = rand::prelude::thread_rng();
-    let nx = 200;
-    let ny = 100;
+    let nx = 640;
+    let ny = 480;
     let ns = 100;
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny).unwrap();
     let mut world = HitableList::new();
@@ -68,7 +68,10 @@ fn main() -> io::Result<()> {
         Sphere::new(cgmath::vec3((1_f32, 0_f32, -1_f32)), 0.5, Material::metal(cgmath::vec3((0.8, 0.6, 0.2)), 0.3))
     ));
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((-1_f32, 0_f32, -1_f32)), 0.5, Material::metal(cgmath::vec3((0.8, 0.8, 0.8)), 1.0))
+        Sphere::new(cgmath::vec3((-1_f32, 0_f32, -1_f32)), 0.5, Material::dielectric(1.5))
+    ));
+    world.push(Box::new(
+        Sphere::new(cgmath::vec3((-1_f32, 0_f32, -1_f32)), -0.45, Material::dielectric(1.5))
     ));
     let camera = Camera::new();
     for j in 0..ny {
