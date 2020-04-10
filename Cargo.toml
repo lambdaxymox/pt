@@ -4,6 +4,7 @@ version = "0.1.0"
 keywords = ["path tracer", "offline rendering"]
 categories = ["computer graphics"]
 authors = ["LambdaXymox <lambda.xymox@gmail.com>"]
+description = "An offline path tracer."
 edition = "2018"
 
 [dependencies]

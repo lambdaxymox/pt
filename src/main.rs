@@ -108,8 +108,8 @@ fn write_image_to_file(image: &Image, file: &mut File) -> io::Result<()> {
 }
 
 fn main() -> io::Result<()> {
-    let width = 320;
-    let height = 240;
+    let width = 640;
+    let height = 480;
     let samples_per_pixel = SAMPLES_PER_PIXEL;
     let camera = camera(width, height);
     let mut rng = rand::prelude::thread_rng();

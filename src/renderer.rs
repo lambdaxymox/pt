@@ -56,11 +56,12 @@ pub struct Image {
     pub data: Vec<Rgba>,
 }
 
+
 pub fn render(width: u32, height: u32, samples_per_pixel: u32, camera: Camera, world: HitableList) -> Image {
     let mut rng = rand::prelude::thread_rng();
     let mut data = vec![];
     for j in 0..height {
-        println!("Row {}.", j);
+        println!("Rendering row {} of {}", j+1, height);
         for i in 0..width {
             let mut col = cgmath::vec3((0_f32, 0_f32, 0_f32));
             for _ in 0..samples_per_pixel {
