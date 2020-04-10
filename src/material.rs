@@ -24,15 +24,15 @@ impl Scatter {
     }
 }
 
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     pub t: f32,
     pub p: Vector3,
     pub normal: Vector3,
-    pub material: Material,
+    pub material: &'a Material,
 }
 
-impl HitRecord {
-    pub fn new(t: f32, p: Vector3, normal: Vector3, material: Material) -> HitRecord {
+impl<'a> HitRecord<'a> {
+    pub fn new(t: f32, p: Vector3, normal: Vector3, material: &'a Material) -> HitRecord<'a> {
         HitRecord {
             t: t,
             p: p,

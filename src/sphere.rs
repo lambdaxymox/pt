@@ -35,7 +35,7 @@ impl Hitable for Sphere {
                     temp,
                     hit_point,
                     (hit_point - self.center) / self.radius,
-                    self.material
+                    &self.material
                 ));
             }
             temp = (-b + f32::sqrt(b * b - a * c)) / a; // 4 * a * c?
@@ -45,7 +45,7 @@ impl Hitable for Sphere {
                     temp,
                     hit_point,
                     (hit_point - self.center) / self.radius,
-                    self.material
+                    &self.material
                 ));
             }
         }
