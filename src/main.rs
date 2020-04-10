@@ -72,7 +72,7 @@ fn main() -> io::Result<()> {
         Sphere::new(cgmath::vec3((1_f32, 0_f32, -1_f32)), 0.5, Material::metal(cgmath::vec3((0.8, 0.8, 0.8))))
     ));
     let camera = Camera::new();
-    for j in 0..(ny - 1) {
+    for j in 0..ny {
         for i in 0..nx {
             let mut col = cgmath::vec3((0_f32, 0_f32, 0_f32));
             for _ in 0..ns {
