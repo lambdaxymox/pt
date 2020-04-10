@@ -85,14 +85,29 @@ fn color<H: Hitable>(ray: Ray, world: &H, rng: &mut ThreadRng, depth: u32) -> Ve
     }
 }
 
-fn to_bgra(r: u32, g: u32, b: u32) -> u32 {
-    255 << 24 | r << 16 | g << 8 | b
+struct Rgba {
+    r: u8,
+    g: u8,
+    b: u8,
+    a: u8,
+}
+
+impl Rgba {
+    #[inline]
+    fn new(r: u8, g: u8, b: u8, a: u8) -> Rgba {
+        Rgba { 
+            r: r,
+            b: b,
+            g: g,
+            a: a,
+        }
+    }
 }
 
 struct Image {
     width: u32,
     height: u32,
-    data: Vec<u32>,
+    data: Vec<Rgba>,
 }
 
 fn render(width: u32, height: u32, samples_per_pixel: u32, camera: Camera, world: HitableList) -> Image {
@@ -112,11 +127,12 @@ fn render(width: u32, height: u32, samples_per_pixel: u32, camera: Camera, world
             }
             col /= samples_per_pixel as f32;
             col = cgmath::vec3((f32::sqrt(col[0]), f32::sqrt(col[1]), f32::sqrt(col[2])));
-            let ir = (255.99 * col[0]) as u32;
-            let ig = (255.99 * col[1]) as u32;
-            let ib = (255.99 * col[2]) as u32;
+            let ir = (255.99 * col[0]) as u8;
+            let ig = (255.99 * col[1]) as u8;
+            let ib = (255.99 * col[2]) as u8;
+            let ia = 255;
 
-            data.push(to_bgra(ir, ig, ib));
+            data.push(Rgba::new(ir, ig, ib, ia));
         }
     }
 
@@ -129,7 +145,9 @@ fn render(width: u32, height: u32, samples_per_pixel: u32, camera: Camera, world
 
 fn write_image_to_file(image: &Image, file: &mut File) -> io::Result<()> {
     write!(file, "P3\n{} {}\n255\n", image.width, image.height).unwrap();
-
+    for pixel in image.data.iter() {
+        writeln!(file, "{} {} {}", pixel.r, pixel.g, pixel.b).unwrap();
+    }
 
     Ok(())
 }
