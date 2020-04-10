@@ -28,7 +28,7 @@ const SAMPLES_PER_PIXEL: u32 = 128;
 
 
 fn camera(width: u32, height: u32) -> Camera {
-    let look_from = cgmath::vec3((16_f32, 2_f32, 4_f32));
+    let look_from = cgmath::vec3((16_f32, 4_f32, 4_f32));
     let look_at = cgmath::vec3((0_f32, 0_f32, 0_f32));
     let distance_to_focus = (look_from - look_at).magnitude();
     let aperture = 2_f32;
@@ -45,8 +45,8 @@ fn generate_scene(rng: &mut ThreadRng) -> HitableList {
         Sphere::new(cgmath::vec3((0_f32, -1000_f32, 0_f32)), 1000_f32, Material::lambertian(cgmath::vec3((0.5, 0.5, 0.5))))
     ));
     
-    for a in -5..5 {
-        for b in -5..5 {
+    for a in -2..2 {
+        for b in -2..2 {
             let choose_mat = rng.gen::<f32>();
             let center_x = a as f32 + 0.9 * rng.gen::<f32>();
             let center_y = 0.2;
@@ -108,7 +108,7 @@ fn write_image_to_file(image: &Image, file: &mut File) -> io::Result<()> {
 }
 
 fn main() -> io::Result<()> {
-    let width = 640;
+    let width = 720;
     let height = 480;
     let samples_per_pixel = SAMPLES_PER_PIXEL;
     let camera = camera(width, height);
