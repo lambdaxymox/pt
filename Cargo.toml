@@ -1,6 +1,8 @@
 [package]
 name = "pt"
 version = "0.1.0"
+keywords = ["path tracer", "offline rendering"]
+categories = ["computer graphics"]
 authors = ["LambdaXymox <lambda.xymox@gmail.com>"]
 edition = "2018"
 
