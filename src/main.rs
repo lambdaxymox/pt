@@ -89,17 +89,15 @@ struct Rgba {
     r: u8,
     g: u8,
     b: u8,
-    a: u8,
 }
 
 impl Rgba {
     #[inline]
-    fn new(r: u8, g: u8, b: u8, a: u8) -> Rgba {
+    fn new(r: u8, g: u8, b: u8) -> Rgba {
         Rgba { 
             r: r,
             b: b,
             g: g,
-            a: a,
         }
     }
 }
@@ -130,9 +128,8 @@ fn render(width: u32, height: u32, samples_per_pixel: u32, camera: Camera, world
             let ir = (255.99 * col[0]) as u8;
             let ig = (255.99 * col[1]) as u8;
             let ib = (255.99 * col[2]) as u8;
-            let ia = 255;
 
-            data.push(Rgba::new(ir, ig, ib, ia));
+            data.push(Rgba::new(ir, ig, ib));
         }
     }
 
