@@ -1,6 +1,7 @@
 use crate::ray::Ray;
 use cgmath::Vector3;
 
+
 pub struct Camera {
     origin: Vector3,
     lower_left_corner: Vector3,

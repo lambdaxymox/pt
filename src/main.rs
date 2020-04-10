@@ -20,25 +20,36 @@ use cgmath::{Vector3, Magnitude};
 use camera::Camera;
 use ray::Ray;
 use sphere::Sphere;
-use hitable::{Hitable, HitRecord};
+use hitable::{NullMaterial, Lambertian, Metal, Hitable, HitRecord};
 use hitable_list::HitableList;
 
 
-fn color<H: Hitable>(ray: Ray, world: &H) -> Vector3 {
+#[inline]
+fn component_multiply(v1: Vector3, v2: Vector3) -> Vector3 {
+    cgmath::vec3((v1.x * v2.x, v1.y * v2.y, v1.z * v2.z))
+}
+
+fn color<H: Hitable>(ray: Ray, world: &H, depth: u32) -> Vector3 {
     let mut rec = HitRecord::new(
         0_f32,
         cgmath::vec3((0_f32, 0_f32, 0_f32)), 
         cgmath::vec3((0_f32, 0_f32, 0_f32)),
+        Box::new(NullMaterial::new())
     );
-    if world.hit(ray, 0_f32, f32::MAX, &mut rec) {
-        let target = rec.p + rec.normal + sample::random_in_unit_sphere();
-        return color(Ray::new(rec.p, target - rec.p), world) * 0.5;
+    if world.hit(ray, 0.001, f32::MAX, &mut rec) {
+        let mut scattered = Ray::new(cgmath::vec3((0_f32, 0_f32, 0_f32)), cgmath::vec3((0_f32, 0_f32, 0_f32)));
+        let mut attenuation = cgmath::vec3((0_f32, 0_f32, 0_f32));
+        if depth < 50 && rec.material.scatter(ray, &rec, &mut attenuation, &mut scattered) {
+            let col = color(scattered, world, depth + 1);
+            return component_multiply(attenuation, col);
+        } else {
+            return cgmath::vec3((0_f32, 0_f32, 0_f32));
+        }
     } else {
         let unit_direction = ray.direction.normalize();
         let t = (unit_direction.y + 1_f32) * 0.5;
-        return cgmath::vec3((1.0, 1.0, 1.0)) * (1_f32 - t) + cgmath::vec3((0.5, 0.7, 1.0)) * t;
+        return cgmath::vec3((1_f32, 1_f32, 1_f32)) * (1_f32 - t) + cgmath::vec3((0.5, 0.7, 1.0)) * t
     }
-
 }
 
 fn main() -> io::Result<()> {
@@ -49,8 +60,18 @@ fn main() -> io::Result<()> {
     let ns = 100;
     write!(&mut file, "P3\n{} {}\n255\n", nx, ny).unwrap();
     let mut world = HitableList::new();
-    world.push(Box::new(Sphere::new(cgmath::vec3((0_f32, 0_f32, -1_f32)), 0.5)));
-    world.push(Box::new(Sphere::new(cgmath::vec3((0_f32, -100.5, -1_f32)), 100_f32)));
+    world.push(Box::new(
+        Sphere::new(cgmath::vec3((0_f32, 0_f32, -1_f32)), 0.5, Box::new(Lambertian::new(cgmath::vec3((0.8, 0.3, 0.3)))))
+    ));
+    world.push(Box::new(
+        Sphere::new(cgmath::vec3((0_f32, -100.5, -1_f32)), 100_f32, Box::new(Lambertian::new(cgmath::vec3((0.8, 0.8, 0.0)))))
+    ));
+    world.push(Box::new(
+        Sphere::new(cgmath::vec3((1_f32, 0_f32, -1_f32)), 0.5, Box::new(Metal::new(cgmath::vec3((0.8, 0.6, 0.2)))))
+    ));
+    world.push(Box::new(
+        Sphere::new(cgmath::vec3((1_f32, 0_f32, -1_f32)), 0.5, Box::new(Metal::new(cgmath::vec3((0.8, 0.8, 0.8)))))
+    ));
     let camera = Camera::new();
     for j in 0..(ny - 1) {
         for i in 0..nx {
@@ -62,7 +83,7 @@ fn main() -> io::Result<()> {
                 let v = (((ny - j) as f32) + dv) / (ny as f32);
                 let ray = camera.get_ray(u, v);
                 let p = ray.point_at_parameter(2_f32);
-                col += color(ray, &world);
+                col += color(ray, &world, 0);
             }
             col /= ns as f32;
             col = cgmath::vec3((f32::sqrt(col[0]), f32::sqrt(col[1]), f32::sqrt(col[2])));
