@@ -9,6 +9,21 @@ fn reflect(v: Vector3, n: Vector3) -> Vector3 {
     v - n * 2_f32 * cgmath::dot(v, n)
 }
 
+#[derive(Copy, Clone)]
+pub struct Scatter {
+    pub attenuation: Vector3,
+    pub ray: Ray,
+}
+
+impl Scatter {
+    pub fn new(attenuation: Vector3, ray: Ray) -> Scatter {
+        Scatter { 
+            attenuation: attenuation, 
+            ray: ray,
+        }
+    }
+}
+
 pub struct HitRecord {
     pub t: f32,
     pub p: Vector3,
@@ -43,12 +58,12 @@ impl Lambertian {
         }
     }
 
-    pub fn scatter(&self, ray_in: Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray, rng: &mut ThreadRng) -> bool {
-        let target = rec.p + rec.normal + sample::random_in_unit_sphere(rng);
-        *scattered = Ray::new(rec.p, target - rec.p);
-        *attenuation = self.albedo;
+    pub fn scatter(&self, ray_in: Ray, hit: &HitRecord, rng: &mut ThreadRng) -> Scatter {
+        let target = hit.p + hit.normal + sample::random_in_unit_sphere(rng);
+        let attenuation = self.albedo;
+        let scattered = Ray::new(hit.p, target - hit.p);
 
-        true
+        Scatter::new(attenuation, scattered)
     }
 }
 
@@ -66,12 +81,12 @@ impl Metal {
         }
     }
 
-    pub fn scatter(&self, ray_in: Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray, rng: &mut ThreadRng) -> bool {
-        let reflected = reflect(ray_in.direction.normalize(), rec.normal);
-        *scattered = Ray::new(rec.p, reflected + sample::random_in_unit_sphere(rng) * self.fuzz);
-        *attenuation = self.albedo;
-
-        cgmath::dot(scattered.direction, rec.normal) > 0_f32
+    pub fn scatter(&self, ray_in: Ray, hit: &HitRecord, rng: &mut ThreadRng) -> Scatter {
+        let reflected = reflect(ray_in.direction.normalize(), hit.normal);
+        let attenuation = self.albedo;
+        let scattered = Ray::new(hit.p, reflected + sample::random_in_unit_sphere(rng) * self.fuzz);
+        
+        Scatter::new(attenuation, scattered)
     }
 }
 
@@ -83,10 +98,10 @@ pub enum Material {
 }
 
 impl Material {
-    pub fn scatter(&self, ray_in: Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray, rng: &mut ThreadRng) -> bool {
+    pub fn scatter(&self, ray_in: Ray, hit: &HitRecord, rng: &mut ThreadRng) -> Scatter {
         match *self {
-            Material::Metal(metal) => metal.scatter(ray_in, rec, attenuation, scattered, rng),
-            Material::Lambertian(lambertian) => lambertian.scatter(ray_in, rec, attenuation, scattered, rng),
+            Material::Metal(metal) => metal.scatter(ray_in, hit, rng),
+            Material::Lambertian(lambertian) => lambertian.scatter(ray_in, hit, rng),
         }
     }
 

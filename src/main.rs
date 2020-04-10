@@ -33,12 +33,11 @@ fn component_multiply(v1: Vector3, v2: Vector3) -> Vector3 {
 
 fn color<H: Hitable>(ray: Ray, world: &H, rng: &mut ThreadRng, depth: u32) -> Vector3 {
     match world.hit(&ray, 0.001, f32::MAX) {
-        Some(hit_record) => {    
-            let mut scattered = Ray::new(cgmath::vec3((0_f32, 0_f32, 0_f32)), cgmath::vec3((0_f32, 0_f32, 0_f32)));
-            let mut attenuation = cgmath::vec3((0_f32, 0_f32, 0_f32));
-            if (depth < MAX_DEPTH) && (hit_record.material.scatter(ray, &hit_record, &mut attenuation, &mut scattered, rng)) {
-                let col = color(scattered, world, rng, depth + 1);
-                return component_multiply(attenuation, col);
+        Some(hit) => {    
+            if depth < MAX_DEPTH {
+                let scatter = hit.material.scatter(ray, &hit, rng);
+                let col = color(scatter.ray, world, rng, depth + 1);
+                return component_multiply(scatter.attenuation, col);
             } else {
                 return cgmath::vec3((0_f32, 0_f32, 0_f32));
             }
