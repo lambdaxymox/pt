@@ -60,15 +60,15 @@ pub struct Image {
 pub fn render(width: u32, height: u32, samples_per_pixel: u32, camera: Camera, world: HitableList) -> Image {
     let mut rng = rand::prelude::thread_rng();
     let mut data = vec![];
-    for j in 0..height {
-        println!("Rendering row {} of {}", j+1, height);
-        for i in 0..width {
+    for row in 0..height {
+        println!("Rendering line {} of {}", row+1, height);
+        for column in 0..width {
             let mut col = cgmath::vec3((0_f32, 0_f32, 0_f32));
             for _ in 0..samples_per_pixel {
                 let du = rng.gen::<f32>();
-                let u = (i as f32 + du) / (width as f32);
+                let u = (column as f32 + du) / (width as f32);
                 let dv = rng.gen::<f32>();
-                let v = (((height - j) as f32) + dv) / (height as f32);
+                let v = (((height - row) as f32) + dv) / (height as f32);
                 let ray = camera.get_ray(&mut rng, u, v);
                 col += color(ray, &world, &mut rng, 0);
             }
