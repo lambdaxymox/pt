@@ -73,7 +73,14 @@ fn main() -> io::Result<()> {
     world.push(Box::new(
         Sphere::new(cgmath::vec3((-1_f32, 0_f32, -1_f32)), -0.45, Material::dielectric(1.5))
     ));
-    let camera = Camera::new();
+    let look_from = cgmath::vec3((3_f32, 3_f32, 2_f32));
+    let look_at = cgmath::vec3((0_f32, 0_f32, -1_f32));
+    let distance_to_focus = (look_from - look_at).magnitude();
+    let aperture = 2_f32;
+    let v_up = cgmath::vec3((0_f32, 1_f32, 0_f32));
+    let v_fov = 20_f32;
+    let aspect_ratio = (nx as f32) / (ny as f32);
+    let camera = Camera::new(look_from, look_at, v_up, v_fov, aspect_ratio, aperture, distance_to_focus);
     for j in 0..ny {
         for i in 0..nx {
             let mut col = cgmath::vec3((0_f32, 0_f32, 0_f32));
@@ -82,7 +89,7 @@ fn main() -> io::Result<()> {
                 let u = (i as f32 + du) / (nx as f32);
                 let dv: f32 = rng.gen();
                 let v = (((ny - j) as f32) + dv) / (ny as f32);
-                let ray = camera.get_ray(u, v);
+                let ray = camera.get_ray(&mut rng, u, v);
                 let p = ray.point_at_parameter(2_f32);
                 col += color(ray, &world, &mut rng, 0);
             }
