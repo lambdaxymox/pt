@@ -31,7 +31,7 @@ fn camera(width: u32, height: u32) -> Camera {
     let look_from = cgmath::vec3((16_f32, 2_f32, 4_f32));
     let look_at = cgmath::vec3((0_f32, 0_f32, 0_f32));
     let distance_to_focus = (look_from - look_at).magnitude();
-    let aperture = 1_f32;
+    let aperture = 0.5_f32;
     let v_up = cgmath::vec3((0_f32, 1_f32, 0_f32));
     let v_fov = 20_f32;
     let aspect_ratio = (width as f32) / (height as f32);
