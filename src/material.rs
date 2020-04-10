@@ -31,20 +31,6 @@ pub trait Hitable {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
 }
 
-
-#[derive(Copy, Clone)]
-pub struct NullMaterial {}
-
-impl NullMaterial {
-    pub fn new() -> NullMaterial {
-        NullMaterial {}
-    }
-
-    pub fn scatter(&self, ray_in: Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray, rng: &mut ThreadRng) -> bool {
-        false
-    }
-}
-
 #[derive(Copy, Clone)]
 pub struct Lambertian {
     albedo: Vector3,
@@ -92,7 +78,6 @@ impl Metal {
 
 #[derive(Copy, Clone)]
 pub enum Material {
-    NullMaterial(NullMaterial),
     Metal(Metal),
     Lambertian(Lambertian),
 }
@@ -100,14 +85,9 @@ pub enum Material {
 impl Material {
     pub fn scatter(&self, ray_in: Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray, rng: &mut ThreadRng) -> bool {
         match *self {
-            Material::NullMaterial(null) => null.scatter(ray_in, rec, attenuation, scattered, rng),
             Material::Metal(metal) => metal.scatter(ray_in, rec, attenuation, scattered, rng),
             Material::Lambertian(lambertian) => lambertian.scatter(ray_in, rec, attenuation, scattered, rng),
         }
-    }
-
-    pub fn null() -> Material {
-        Material::NullMaterial(NullMaterial::new())
     }
 
     pub fn lambertian(albedo: Vector3) -> Material {
