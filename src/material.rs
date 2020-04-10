@@ -24,6 +24,7 @@ impl Scatter {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct HitRecord<'a> {
     pub t: f32,
     pub p: Vector3,
@@ -90,11 +91,72 @@ impl Metal {
     }
 }
 
+#[derive(Copy, Clone)]
+pub struct Dielectric {
+    pub refraction_index: f32,
+}
+
+fn refract(v: Vector3, n: Vector3, ni_over_nt: f32) -> Option<Vector3> {
+    let uv = v.normalize();
+    let dt = cgmath::dot(uv, n);
+    let discriminant = 1_f32 - ni_over_nt * ni_over_nt * (1_f32 - dt * dt);
+    if discriminant > 0_f32 {
+        let refracted = (uv - n * dt) * ni_over_nt - n * discriminant.sqrt();
+        Some(refracted)
+    } else {
+        None
+    }
+}
+
+fn schlick(cosine: f32, refraction_index: f32) -> f32 {
+    let mut r0 = (1_f32 - refraction_index) / (1_f32 + refraction_index);
+    r0 = r0 * r0;
+    r0 + (1_f32 - r0) * (1_f32 - cosine).powf(5_f32)
+}
+
+impl Dielectric {
+    fn new(refraction_index: f32) -> Dielectric {
+        Dielectric {
+            refraction_index: refraction_index,
+        }
+    }
+
+    pub fn scatter(&self, ray: Ray, hit: HitRecord, rng: &mut ThreadRng) -> Scatter {
+        let (outward_normal, ni_over_nt, cosine) = if cgmath::dot(ray.direction, hit.normal) > 0_f32 {
+            (
+                -hit.normal,
+                self.refraction_index,
+                self.refraction_index * cgmath::dot(ray.direction, hit.normal) / ray.direction.magnitude(),
+            )
+        } else {
+            (
+                hit.normal,
+                1_f32 / self.refraction_index,
+                -cgmath::dot(ray.direction, hit.normal) / ray.direction.magnitude(),
+            )
+        };
+
+        if let Some(refracted) = refract(ray.direction, outward_normal, ni_over_nt) {
+            let reflection_prob = schlick(cosine, self.refraction_index);
+            let out_dir = if rng.gen::<f32>() < reflection_prob {
+                reflect(ray.direction, hit.normal)
+            } else {
+                refracted
+            };
+            Scatter::new(cgmath::vec3((1_f32, 1_f32, 1_f32)), Ray::new(hit.p, out_dir))
+        } else {
+            Scatter::new(cgmath::vec3((1_f32, 1_f32, 1_f32)), Ray::new(hit.p, reflect(ray.direction, hit.normal)))
+        }
+    }
+}
+
+
 
 #[derive(Copy, Clone)]
 pub enum Material {
     Metal(Metal),
     Lambertian(Lambertian),
+    Dielectric(Dielectric),
 }
 
 impl Material {
@@ -102,6 +164,7 @@ impl Material {
         match *self {
             Material::Metal(metal) => metal.scatter(ray_in, hit, rng),
             Material::Lambertian(lambertian) => lambertian.scatter(ray_in, hit, rng),
+            Material::Dielectric(dielectric) => dielectric.scatter(ray_in, *hit, rng),
         }
     }
 
@@ -111,5 +174,9 @@ impl Material {
     
     pub fn metal(albedo: Vector3, fuzz: f32) -> Material {
         Material::Metal(Metal::new(albedo, fuzz))
+    }
+
+    pub fn dielectric(refraction_index: f32) -> Material {
+        Material::Dielectric(Dielectric::new(refraction_index))
     }
 }
