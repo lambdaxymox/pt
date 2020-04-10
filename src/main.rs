@@ -45,8 +45,8 @@ fn generate_scene(rng: &mut ThreadRng) -> HitableList {
         Sphere::new(cgmath::vec3((0_f32, -1000_f32, 0_f32)), 1000_f32, Material::lambertian(cgmath::vec3((0.5, 0.5, 0.5))))
     ));
     
-    for a in -11..11 {
-        for b in -11..11 {
+    for a in -5..5 {
+        for b in -5..5 {
             let choose_mat = rng.gen::<f32>();
             let center_x = a as f32 + 0.9 * rng.gen::<f32>();
             let center_y = 0.2;
