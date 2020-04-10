@@ -62,13 +62,7 @@ fn camera(width: u32, height: u32) -> Camera {
     Camera::new(look_from, look_at, v_up, v_fov, aspect_ratio, aperture, distance_to_focus)
 }
 
-fn main() -> io::Result<()> {
-    let mut file = File::create("output.ppm")?;
-    let mut rng = rand::prelude::thread_rng();
-    let width = 640;
-    let height = 480;
-    let samples_per_pixel = 100;
-    write!(&mut file, "P3\n{} {}\n255\n", width, height).unwrap();
+fn generate_scene(rng: &mut ThreadRng) -> HitableList {
     let mut world = HitableList::new();
     world.push(Box::new(
         Sphere::new(cgmath::vec3((0_f32, 0_f32, -1_f32)), 0.5, Material::lambertian(cgmath::vec3((0.1, 0.2, 0.5))))
@@ -85,6 +79,18 @@ fn main() -> io::Result<()> {
     world.push(Box::new(
         Sphere::new(cgmath::vec3((-1_f32, 0_f32, -1_f32)), -0.45, Material::dielectric(1.5))
     ));
+
+    world
+}
+
+fn main() -> io::Result<()> {
+    let mut file = File::create("output.ppm")?;
+    let mut rng = rand::prelude::thread_rng();
+    let width = 640;
+    let height = 480;
+    let samples_per_pixel = 100;
+    write!(&mut file, "P3\n{} {}\n255\n", width, height).unwrap();
+    let world = generate_scene(&mut rng);
     let camera = camera(width, height);
     for j in 0..height {
         for i in 0..width {
