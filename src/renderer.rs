@@ -60,6 +60,7 @@ pub fn render(width: u32, height: u32, samples_per_pixel: u32, camera: Camera, w
     let mut rng = rand::prelude::thread_rng();
     let mut data = vec![];
     for j in 0..height {
+        println!("Row {}.", j);
         for i in 0..width {
             let mut col = cgmath::vec3((0_f32, 0_f32, 0_f32));
             for _ in 0..samples_per_pixel {
@@ -68,7 +69,6 @@ pub fn render(width: u32, height: u32, samples_per_pixel: u32, camera: Camera, w
                 let dv = rng.gen::<f32>();
                 let v = (((height - j) as f32) + dv) / (height as f32);
                 let ray = camera.get_ray(&mut rng, u, v);
-                let p = ray.point_at_parameter(2_f32);
                 col += color(ray, &world, &mut rng, 0);
             }
             col /= samples_per_pixel as f32;
