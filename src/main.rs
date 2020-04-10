@@ -66,10 +66,10 @@ fn main() -> io::Result<()> {
         Sphere::new(cgmath::vec3((0_f32, -100.5, -1_f32)), 100_f32, Material::lambertian(cgmath::vec3((0.8, 0.8, 0.0))))
     ));
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((1_f32, 0_f32, -1_f32)), 0.5, Material::metal(cgmath::vec3((0.8, 0.6, 0.2))))
+        Sphere::new(cgmath::vec3((1_f32, 0_f32, -1_f32)), 0.5, Material::metal(cgmath::vec3((0.8, 0.6, 0.2)), 0.3))
     ));
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((1_f32, 0_f32, -1_f32)), 0.5, Material::metal(cgmath::vec3((0.8, 0.8, 0.8))))
+        Sphere::new(cgmath::vec3((-1_f32, 0_f32, -1_f32)), 0.5, Material::metal(cgmath::vec3((0.8, 0.8, 0.8)), 1.0))
     ));
     let camera = Camera::new();
     for j in 0..ny {

@@ -24,5 +24,5 @@ impl HitRecord {
 }
 
 pub trait Hitable {
-    fn hit(&self, ray: Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool;
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
 }

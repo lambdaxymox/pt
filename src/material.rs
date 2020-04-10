@@ -110,18 +110,20 @@ impl Lambertian {
 #[derive(Copy, Clone)]
 pub struct Metal {
     albedo: Vector3,
+    fuzz: f32,
 }
 
 impl Metal {
-    pub fn new(albedo: Vector3) -> Metal {
+    pub fn new(albedo: Vector3, fuzz: f32) -> Metal {
         Metal {
             albedo: albedo,
+            fuzz: fuzz,
         }
     }
 
     pub fn scatter(&self, ray_in: Ray, rec: &HitRecord, attenuation: &mut Vector3, scattered: &mut Ray) -> bool {
         let reflected = reflect(ray_in.direction.normalize(), rec.normal);
-        *scattered = Ray::new(rec.p, reflected);
+        *scattered = Ray::new(rec.p, reflected + sample::random_in_unit_sphere() * self.fuzz);
         *attenuation = self.albedo;
 
         cgmath::dot(scattered.direction, rec.normal) > 0_f32
@@ -153,7 +155,7 @@ impl Material {
         Material::Lambertian(Lambertian::new(albedo))
     }
     
-    pub fn metal(albedo: Vector3) -> Material {
-        Material::Metal(Metal::new(albedo))
+    pub fn metal(albedo: Vector3, fuzz: f32) -> Material {
+        Material::Metal(Metal::new(albedo, fuzz))
     }
 }
