@@ -50,16 +50,28 @@ fn color<H: Hitable>(ray: Ray, world: &H, rng: &mut ThreadRng, depth: u32) -> Ve
     }
 }
 
+fn camera(width: u32, height: u32) -> Camera {
+    let look_from = cgmath::vec3((3_f32, 3_f32, 2_f32));
+    let look_at = cgmath::vec3((0_f32, 0_f32, -1_f32));
+    let distance_to_focus = (look_from - look_at).magnitude();
+    let aperture = 2_f32;
+    let v_up = cgmath::vec3((0_f32, 1_f32, 0_f32));
+    let v_fov = 20_f32;
+    let aspect_ratio = (width as f32) / (height as f32);
+    
+    Camera::new(look_from, look_at, v_up, v_fov, aspect_ratio, aperture, distance_to_focus)
+}
+
 fn main() -> io::Result<()> {
     let mut file = File::create("output.ppm")?;
     let mut rng = rand::prelude::thread_rng();
-    let nx = 640;
-    let ny = 480;
-    let ns = 100;
-    write!(&mut file, "P3\n{} {}\n255\n", nx, ny).unwrap();
+    let width = 640;
+    let height = 480;
+    let samples_per_pixel = 100;
+    write!(&mut file, "P3\n{} {}\n255\n", width, height).unwrap();
     let mut world = HitableList::new();
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((0_f32, 0_f32, -1_f32)), 0.5, Material::lambertian(cgmath::vec3((0.8, 0.3, 0.3))))
+        Sphere::new(cgmath::vec3((0_f32, 0_f32, -1_f32)), 0.5, Material::lambertian(cgmath::vec3((0.1, 0.2, 0.5))))
     ));
     world.push(Box::new(
         Sphere::new(cgmath::vec3((0_f32, -100.5, -1_f32)), 100_f32, Material::lambertian(cgmath::vec3((0.8, 0.8, 0.0))))
@@ -73,27 +85,20 @@ fn main() -> io::Result<()> {
     world.push(Box::new(
         Sphere::new(cgmath::vec3((-1_f32, 0_f32, -1_f32)), -0.45, Material::dielectric(1.5))
     ));
-    let look_from = cgmath::vec3((3_f32, 3_f32, 2_f32));
-    let look_at = cgmath::vec3((0_f32, 0_f32, -1_f32));
-    let distance_to_focus = (look_from - look_at).magnitude();
-    let aperture = 2_f32;
-    let v_up = cgmath::vec3((0_f32, 1_f32, 0_f32));
-    let v_fov = 20_f32;
-    let aspect_ratio = (nx as f32) / (ny as f32);
-    let camera = Camera::new(look_from, look_at, v_up, v_fov, aspect_ratio, aperture, distance_to_focus);
-    for j in 0..ny {
-        for i in 0..nx {
+    let camera = camera(width, height);
+    for j in 0..height {
+        for i in 0..width {
             let mut col = cgmath::vec3((0_f32, 0_f32, 0_f32));
-            for _ in 0..ns {
+            for _ in 0..samples_per_pixel {
                 let du: f32 = rng.gen();
-                let u = (i as f32 + du) / (nx as f32);
+                let u = (i as f32 + du) / (width as f32);
                 let dv: f32 = rng.gen();
-                let v = (((ny - j) as f32) + dv) / (ny as f32);
+                let v = (((height - j) as f32) + dv) / (height as f32);
                 let ray = camera.get_ray(&mut rng, u, v);
                 let p = ray.point_at_parameter(2_f32);
                 col += color(ray, &world, &mut rng, 0);
             }
-            col /= ns as f32;
+            col /= samples_per_pixel as f32;
             col = cgmath::vec3((f32::sqrt(col[0]), f32::sqrt(col[1]), f32::sqrt(col[2])));
             let ir = (255.99 * col[0]) as u32;
             let ig = (255.99 * col[1]) as u32;
