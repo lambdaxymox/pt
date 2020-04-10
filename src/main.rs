@@ -41,7 +41,6 @@ fn camera(width: u32, height: u32) -> Camera {
 }
 
 fn generate_scene(rng: &mut ThreadRng) -> HitableList {
-    let n = 500;
     let mut world = HitableList::new();
     world.push(Box::new(
         Sphere::new(cgmath::vec3((0_f32, -1000_f32, 0_f32)), 1000_f32, Material::lambertian(cgmath::vec3((0.5, 0.5, 0.5))))
