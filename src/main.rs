@@ -28,10 +28,10 @@ const SAMPLES_PER_PIXEL: u32 = 128;
 
 
 fn camera(width: u32, height: u32) -> Camera {
-    let look_from = cgmath::vec3((16_f32, 2_f32, 4_f32));
+    let look_from = cgmath::vec3((12_f32, 2_f32, 4_f32));
     let look_at = cgmath::vec3((0_f32, 0_f32, 0_f32));
     let distance_to_focus = (look_from - look_at).magnitude();
-    let aperture = 0.5_f32;
+    let aperture = 0.1_f32;
     let v_up = cgmath::vec3((0_f32, 1_f32, 0_f32));
     let v_fov = 20_f32;
     let aspect_ratio = (width as f32) / (height as f32);
@@ -108,8 +108,8 @@ fn write_image_to_file(image: &Image, file: &mut File) -> io::Result<()> {
 }
 
 fn main() -> io::Result<()> {
-    let width = 640;
-    let height = 320;
+    let width = 1280;
+    let height = 720;
     let samples_per_pixel = SAMPLES_PER_PIXEL;
     let camera = camera(width, height);
     let mut rng = rand::prelude::thread_rng();
