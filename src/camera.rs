@@ -1,25 +1,31 @@
-use crate::ray::Ray;
+use crate::ray::{
+    Ray,
+};
 use crate::sample;
-use cgmath::{Magnitude, Vector3};
+use cglinalg::{
+    CrossProduct,
+    Magnitude, 
+    Vector3
+};
 use rand::prelude::*;
 
 
 #[derive(Copy, Clone)]
 pub struct Camera {
-    eye: Vector3,
-    lower_left_corner: Vector3,
-    horizontal: Vector3,
-    vertical: Vector3,
-    u: Vector3,
-    v: Vector3,
+    eye: Vector3<f32>,
+    lower_left_corner: Vector3<f32>,
+    horizontal: Vector3<f32>,
+    vertical: Vector3<f32>,
+    u: Vector3<f32>,
+    v: Vector3<f32>,
     lens_radius: f32,
 }
 
 impl Camera {
     pub fn new(
-        look_from: Vector3,
-        look_at: Vector3,
-        v_up: Vector3,
+        look_from: Vector3<f32>,
+        look_at: Vector3<f32>,
+        v_up: Vector3<f32>,
         v_fov: f32,
         aspect: f32, aperture: f32, focus_dist: f32) -> Camera {
 
@@ -60,3 +66,4 @@ impl Camera {
         )
     }
 }
+

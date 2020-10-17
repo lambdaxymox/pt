@@ -1,16 +1,23 @@
 use crate::ray::Ray;
-use crate::material::{Material, Hitable, HitRecord};
-use cgmath::Vector3;
+use crate::material::{
+    Material, 
+    Hitable, 
+    HitRecord
+};
+use cglinalg::{
+    DotProduct,
+    Vector3,
+};
 
 
 pub struct Sphere {
-    pub center: Vector3,
+    pub center: Vector3<f32>,
     pub radius: f32,
     pub material: Material,
 }
 
 impl Sphere {
-    pub fn new(center: Vector3, radius: f32, material: Material) -> Sphere {
+    pub fn new(center: Vector3<f32>, radius: f32, material: Material) -> Sphere {
         Sphere {
             center: center,
             radius: radius,
@@ -22,9 +29,9 @@ impl Sphere {
 impl Hitable for Sphere {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let oc = ray.origin - self.center;
-        let a = cgmath::dot(ray.direction, ray.direction);
-        let b = cgmath::dot(oc, ray.direction);
-        let c = cgmath::dot(oc, oc) - self.radius * self.radius;
+        let a = ray.direction.dot(ray.direction);
+        let b = oc.dot(ray.direction);
+        let c = oc.dot(oc) - self.radius * self.radius;
         let discriminant = b * b - a * c; // 4 * a * c?
 
         if discriminant > 0_f32 {

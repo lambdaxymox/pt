@@ -1,22 +1,28 @@
-use crate::ray::Ray;
+use crate::ray::{
+    Ray,
+};
 use crate::sample;
-use cgmath::{Magnitude, Vector3};
+use cglinalg::{
+    DotProduct,
+    Magnitude, 
+    Vector3,
+};
 use rand::prelude::*;
 
 
 #[inline]
-fn reflect(v: Vector3, n: Vector3) -> Vector3 {
-    v - n * 2_f32 * cgmath::dot(v, n)
+fn reflect(v: Vector3<f32>, n: Vector3<f32>) -> Vector3<f32> {
+    v - n * 2_f32 * v.dot(n)
 }
 
 #[derive(Copy, Clone)]
 pub struct Scatter {
-    pub attenuation: Vector3,
+    pub attenuation: Vector3<f32>,
     pub ray: Ray,
 }
 
 impl Scatter {
-    pub fn new(attenuation: Vector3, ray: Ray) -> Scatter {
+    pub fn new(attenuation: Vector3<f32>, ray: Ray) -> Scatter {
         Scatter { 
             attenuation: attenuation, 
             ray: ray,
@@ -27,13 +33,13 @@ impl Scatter {
 #[derive(Copy, Clone)]
 pub struct HitRecord<'a> {
     pub t: f32,
-    pub p: Vector3,
-    pub normal: Vector3,
+    pub p: Vector3<f32>,
+    pub normal: Vector3<f32>,
     pub material: &'a Material,
 }
 
 impl<'a> HitRecord<'a> {
-    pub fn new(t: f32, p: Vector3, normal: Vector3, material: &'a Material) -> HitRecord<'a> {
+    pub fn new(t: f32, p: Vector3<f32>, normal: Vector3<f32>, material: &'a Material) -> HitRecord<'a> {
         HitRecord {
             t: t,
             p: p,
@@ -49,17 +55,17 @@ pub trait Hitable {
 
 #[derive(Copy, Clone)]
 pub struct Lambertian {
-    albedo: Vector3,
+    albedo: Vector3<f32>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Vector3) -> Lambertian {
+    pub fn new(albedo: Vector3<f32>) -> Lambertian {
         Lambertian {
             albedo: albedo,
         }
     }
 
-    pub fn scatter(&self, ray_in: Ray, hit: &HitRecord, rng: &mut ThreadRng) -> Scatter {
+    pub fn scatter(&self, _ray_in: Ray, hit: &HitRecord, rng: &mut ThreadRng) -> Scatter {
         let target = hit.p + hit.normal + sample::random_in_unit_sphere(rng);
         let attenuation = self.albedo;
         let scattered = Ray::new(hit.p, target - hit.p);
@@ -70,12 +76,12 @@ impl Lambertian {
 
 #[derive(Copy, Clone)]
 pub struct Metal {
-    albedo: Vector3,
+    albedo: Vector3<f32>,
     fuzz: f32,
 }
 
 impl Metal {
-    pub fn new(albedo: Vector3, fuzz: f32) -> Metal {
+    pub fn new(albedo: Vector3<f32>, fuzz: f32) -> Metal {
         Metal {
             albedo: albedo,
             fuzz: fuzz,
@@ -96,9 +102,9 @@ pub struct Dielectric {
     pub refraction_index: f32,
 }
 
-fn refract(v: Vector3, n: Vector3, ni_over_nt: f32) -> Option<Vector3> {
+fn refract(v: Vector3<f32>, n: Vector3<f32>, ni_over_nt: f32) -> Option<Vector3<f32>> {
     let uv = v.normalize();
-    let dt = cgmath::dot(uv, n);
+    let dt = uv.dot(n);
     let discriminant = 1_f32 - ni_over_nt * ni_over_nt * (1_f32 - dt * dt);
     if discriminant > 0_f32 {
         let refracted = (uv - n * dt) * ni_over_nt - n * discriminant.sqrt();
@@ -122,17 +128,17 @@ impl Dielectric {
     }
 
     pub fn scatter(&self, ray: Ray, hit: HitRecord, rng: &mut ThreadRng) -> Scatter {
-        let (outward_normal, ni_over_nt, cosine) = if cgmath::dot(ray.direction, hit.normal) > 0_f32 {
+        let (outward_normal, ni_over_nt, cosine) = if ray.direction.dot(hit.normal) > 0_f32 {
             (
                 -hit.normal,
                 self.refraction_index,
-                self.refraction_index * cgmath::dot(ray.direction, hit.normal) / ray.direction.magnitude(),
+                self.refraction_index * ray.direction.dot(hit.normal) / ray.direction.magnitude(),
             )
         } else {
             (
                 hit.normal,
                 1_f32 / self.refraction_index,
-                -cgmath::dot(ray.direction, hit.normal) / ray.direction.magnitude(),
+                -ray.direction.dot(hit.normal) / ray.direction.magnitude(),
             )
         };
 
@@ -143,9 +149,15 @@ impl Dielectric {
             } else {
                 refracted
             };
-            Scatter::new(cgmath::vec3((1_f32, 1_f32, 1_f32)), Ray::new(hit.p, out_dir))
+            Scatter::new(
+                Vector3::new(1_f32, 1_f32, 1_f32), 
+                Ray::new(hit.p, out_dir)
+            )
         } else {
-            Scatter::new(cgmath::vec3((1_f32, 1_f32, 1_f32)), Ray::new(hit.p, reflect(ray.direction, hit.normal)))
+            Scatter::new(
+                Vector3::new(1_f32, 1_f32, 1_f32), 
+                Ray::new(hit.p, reflect(ray.direction, hit.normal))
+            )
         }
     }
 }
@@ -168,11 +180,11 @@ impl Material {
         }
     }
 
-    pub fn lambertian(albedo: Vector3) -> Material {
+    pub fn lambertian(albedo: Vector3<f32>) -> Material {
         Material::Lambertian(Lambertian::new(albedo))
     }
     
-    pub fn metal(albedo: Vector3, fuzz: f32) -> Material {
+    pub fn metal(albedo: Vector3<f32>, fuzz: f32) -> Material {
         Material::Metal(Metal::new(albedo, fuzz))
     }
 
@@ -180,3 +192,4 @@ impl Material {
         Material::Dielectric(Dielectric::new(refraction_index))
     }
 }
+

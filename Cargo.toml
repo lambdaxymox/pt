@@ -1,12 +1,12 @@
 [package]
 name = "pt"
-version = "0.1.0"
-keywords = ["path tracer", "offline rendering"]
-categories = ["computer graphics"]
+version = "0.1.1"
+keywords = ["graphics"]
+categories = ["graphics"]
 authors = ["LambdaXymox <lambda.xymox@gmail.com>"]
 description = "An offline path tracer."
 edition = "2018"
 
 [dependencies]
-lean_cgmath = { git = "https://github.com/lambdaxymox/lean-cgmath" }
+cglinalg = { git = "https://github.com/lambdaxymox/cglinalg" }
 rand = "0.7.3"

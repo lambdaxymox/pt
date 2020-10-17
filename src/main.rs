@@ -1,5 +1,6 @@
-extern crate cgmath;
+extern crate cglinalg;
 extern crate rand;
+
 
 mod ray;
 mod hitable_list;
@@ -16,10 +17,20 @@ use std::io;
 use std::io::Write;
 use std::f32;
 
-use cgmath::{Magnitude};
-use camera::Camera;
-use sphere::Sphere;
-use hitable_list::HitableList;
+
+use cglinalg::{
+    Vector3,
+    Magnitude,
+};
+use camera::{
+    Camera
+};
+use sphere::{
+    Sphere
+};
+use hitable_list::{
+    HitableList
+};
 use renderer::*;
 use material::*;
 
@@ -28,11 +39,11 @@ const SAMPLES_PER_PIXEL: u32 = 128;
 
 
 fn camera(width: u32, height: u32) -> Camera {
-    let look_from = cgmath::vec3((12_f32, 2_f32, 4_f32));
-    let look_at = cgmath::vec3((0_f32, 0_f32, 0_f32));
+    let look_from = Vector3::new(12_f32, 2_f32, 4_f32);
+    let look_at = Vector3::new(0_f32, 0_f32, 0_f32);
     let distance_to_focus = (look_from - look_at).magnitude();
     let aperture = 0.1_f32;
-    let v_up = cgmath::vec3((0_f32, 1_f32, 0_f32));
+    let v_up = Vector3::new(0_f32, 1_f32, 0_f32);
     let v_fov = 20_f32;
     let aspect_ratio = (width as f32) / (height as f32);
     
@@ -42,7 +53,11 @@ fn camera(width: u32, height: u32) -> Camera {
 fn generate_scene(rng: &mut ThreadRng) -> HitableList {
     let mut world = HitableList::new();
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((0_f32, -1000_f32, 0_f32)), 1000_f32, Material::lambertian(cgmath::vec3((0.5, 0.5, 0.5))))
+        Sphere::new(
+            Vector3::new(0_f32, -1000_f32, 0_f32), 
+            1000_f32, 
+            Material::lambertian(Vector3::new(0.5, 0.5, 0.5))
+        )
     ));
     
     for a in -5..5 {
@@ -51,26 +66,26 @@ fn generate_scene(rng: &mut ThreadRng) -> HitableList {
             let center_x = a as f32 + 0.9 * rng.gen::<f32>();
             let center_y = 0.2;
             let center_z = b as f32 + 0.9 * rng.gen::<f32>();
-            let center = cgmath::vec3((center_x, center_y, center_z));
-            let scene_center = cgmath::vec3((4_f32, 2_f32, 0_f32));
+            let center = Vector3::new(center_x, center_y, center_z);
+            let scene_center =  Vector3::new(4_f32, 2_f32, 0_f32);
             if (center - scene_center).magnitude() > 0.9 {
                 if choose_mat < 0.8 {
                     // Lambertian (diffuse).
-                    let albedo = cgmath::vec3((
+                    let albedo = Vector3::new(
                         rng.gen::<f32>() * rng.gen::<f32>(), 
                         rng.gen::<f32>() * rng.gen::<f32>(), 
                         rng.gen::<f32>() * rng.gen::<f32>()
-                    ));
+                    );
                     world.push(Box::new(
                         Sphere::new(center, 0.2, Material::lambertian(albedo))
                     ));
                 } else if choose_mat < 0.95 {
                     // Metal.
-                    let albedo = cgmath::vec3((
+                    let albedo = Vector3::new(
                         0.5 * (1_f32 + rng.gen::<f32>()), 
                         0.5 * (1_f32 + rng.gen::<f32>()), 
                         0.5 * (1_f32 + rng.gen::<f32>())
-                    ));
+                    );
                     let fuzz = 0.5 * rng.gen::<f32>();
                     world.push(Box::new(
                         Sphere::new(center, 0.2, Material::metal(albedo, fuzz))
@@ -86,13 +101,25 @@ fn generate_scene(rng: &mut ThreadRng) -> HitableList {
     }
 
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((0_f32, 1_f32, 0_f32)), 1_f32, Material::dielectric(1.5))
+        Sphere::new(
+            Vector3::new(0_f32, 1_f32, 0_f32), 
+            1_f32, 
+            Material::dielectric(1.5)
+        )
     ));
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((-4_f32, 1_f32, 0_f32)), 1_f32, Material::lambertian(cgmath::vec3((0.4, 0.2, 0.1))))
+        Sphere::new(
+            Vector3::new(-4_f32, 1_f32, 0_f32), 
+            1_f32, 
+            Material::lambertian(Vector3::new(0.4, 0.2, 0.1))
+        )
     ));
     world.push(Box::new(
-        Sphere::new(cgmath::vec3((4_f32, 1_f32, 0_f32)), 1_f32, Material::metal(cgmath::vec3((0.7, 0.6, 0.5)), 0.1))
+        Sphere::new(
+            Vector3::new(4_f32, 1_f32, 0_f32), 
+            1_f32, 
+            Material::metal(Vector3::new(0.7, 0.6, 0.5), 0.1)
+        )
     ));
 
     world
@@ -124,3 +151,4 @@ fn main() -> io::Result<()> {
     let mut file = File::create("output.ppm").unwrap();
     write_image_to_file(&image, &mut file)
 }
+
