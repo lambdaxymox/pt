@@ -3,7 +3,6 @@ use crate::ray::{
 };
 use crate::sample;
 use cglinalg::{
-    DotProduct,
     Magnitude, 
     Vector3,
 };
@@ -12,7 +11,7 @@ use rand::prelude::*;
 
 #[inline]
 fn reflect(v: Vector3<f32>, n: Vector3<f32>) -> Vector3<f32> {
-    v - n * 2_f32 * v.dot(n)
+    v - n * 2_f32 * v.dot(&n)
 }
 
 #[derive(Copy, Clone)]
@@ -104,7 +103,7 @@ pub struct Dielectric {
 
 fn refract(v: Vector3<f32>, n: Vector3<f32>, ni_over_nt: f32) -> Option<Vector3<f32>> {
     let uv = v.normalize();
-    let dt = uv.dot(n);
+    let dt = uv.dot(&n);
     let discriminant = 1_f32 - ni_over_nt * ni_over_nt * (1_f32 - dt * dt);
     if discriminant > 0_f32 {
         let refracted = (uv - n * dt) * ni_over_nt - n * discriminant.sqrt();
@@ -128,17 +127,17 @@ impl Dielectric {
     }
 
     pub fn scatter(&self, ray: Ray, hit: HitRecord, rng: &mut ThreadRng) -> Scatter {
-        let (outward_normal, ni_over_nt, cosine) = if ray.direction.dot(hit.normal) > 0_f32 {
+        let (outward_normal, ni_over_nt, cosine) = if ray.direction.dot(&hit.normal) > 0_f32 {
             (
                 -hit.normal,
                 self.refraction_index,
-                self.refraction_index * ray.direction.dot(hit.normal) / ray.direction.magnitude(),
+                self.refraction_index * ray.direction.dot(&hit.normal) / ray.direction.magnitude(),
             )
         } else {
             (
                 hit.normal,
                 1_f32 / self.refraction_index,
-                -ray.direction.dot(hit.normal) / ray.direction.magnitude(),
+                -ray.direction.dot(&hit.normal) / ray.direction.magnitude(),
             )
         };
 

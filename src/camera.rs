@@ -3,7 +3,6 @@ use crate::ray::{
 };
 use crate::sample;
 use cglinalg::{
-    CrossProduct,
     Magnitude, 
     Vector3
 };

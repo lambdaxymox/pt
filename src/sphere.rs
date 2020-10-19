@@ -5,7 +5,6 @@ use crate::material::{
     HitRecord
 };
 use cglinalg::{
-    DotProduct,
     Vector3,
 };
 
@@ -29,9 +28,9 @@ impl Sphere {
 impl Hitable for Sphere {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let oc = ray.origin - self.center;
-        let a = ray.direction.dot(ray.direction);
-        let b = oc.dot(ray.direction);
-        let c = oc.dot(oc) - self.radius * self.radius;
+        let a = ray.direction.dot(&ray.direction);
+        let b = oc.dot(&ray.direction);
+        let c = oc.dot(&oc) - self.radius * self.radius;
         let discriminant = b * b - a * c; // 4 * a * c?
 
         if discriminant > 0_f32 {
