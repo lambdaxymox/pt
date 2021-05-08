@@ -23,8 +23,8 @@ checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 
 [[package]]
 name = "cglinalg"
-version = "0.11.9"
-source = "git+https://github.com/lambdaxymox/cglinalg#e2f337c6eb83993f2e9a2c93d87d70d8c54c6dd1"
+version = "0.12.2"
+source = "git+https://github.com/lambdaxymox/cglinalg#2a6fd6d71e0ffc49060b4c4cc3044976d22eb696"
 dependencies = [
  "approx",
  "num-traits",
@@ -64,18 +64,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "ppv-lite86"
-version = "0.2.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c36fa947111f5c62a733b652544dd0016a43ce89619538a8ef92724a6f501a20"
-
-[[package]]
-name = "pt"
-version = "0.1.2"
+name = "path_tracer"
+version = "0.1.3"
 dependencies = [
  "cglinalg",
  "rand",
 ]
+
+[[package]]
+name = "ppv-lite86"
+version = "0.2.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c36fa947111f5c62a733b652544dd0016a43ce89619538a8ef92724a6f501a20"
 
 [[package]]
 name = "rand"

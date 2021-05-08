@@ -1,6 +1,6 @@
 [package]
-name = "pt"
-version = "0.1.2"
+name = "path_tracer"
+version = "0.1.3"
 keywords = ["graphics"]
 categories = ["graphics"]
 authors = ["LambdaXymox <lambda.xymox@gmail.com>"]
